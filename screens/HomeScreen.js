@@ -1,58 +1,58 @@
 // screens/HomeScreen.js
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { auth } from '../firebaseConfig';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { signOut } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
-export default function HomeScreen() {
-  const handleLogout = async () => {
+const HomeScreen = () => {
+  const handleSignOut = async () => {
     try {
       await signOut(auth);
-      // No need to navigate - App.js will handle this automatically
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error(error);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>
-        Welcome!
-      </Text>
-      <Text style={styles.userEmail}>
-        {auth.currentUser?.email} is logged in
-      </Text>
-      <View style={styles.logoutButton}>
-        <Button 
-          title="Logout" 
-          onPress={handleLogout}
-          color="#ff6b6b"
-        />
-      </View>
+      <Text style={styles.title}>Welcome!</Text>
+      <Text style={styles.email}>{auth.currentUser?.email}</Text>
+      
+      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+        <Text style={styles.buttonText}>Sign Out</Text>
+      </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
   },
-  welcomeText: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  userEmail: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
+  email: {
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  logoutButton: {
-    width: '100%',
-    maxWidth: 200,
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
+
+export default HomeScreen;

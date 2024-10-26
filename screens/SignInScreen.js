@@ -1,38 +1,40 @@
-// screens/SignInScreen.js
+// screens/SignUpScreen.js
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
-export default function SignInScreen({ navigation }) {
+const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const signIn = async () => {
-    if (!email || !password) {
+  const handleSignUp = async () => {
+    if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // No need to navigate - App.js will handle this automatically
+      await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      let message = 'An error occurred during sign in';
+      let message = 'An error occurred during sign up';
       switch (error.code) {
+        case 'auth/email-already-in-use':
+          message = 'This email is already registered';
+          break;
         case 'auth/invalid-email':
           message = 'Invalid email address';
           break;
-        case 'auth/user-disabled':
-          message = 'This account has been disabled';
-          break;
-        case 'auth/user-not-found':
-          message = 'No account found with this email';
-          break;
-        case 'auth/wrong-password':
-          message = 'Invalid password';
+        case 'auth/weak-password':
+          message = 'Password should be at least 6 characters';
           break;
       }
       Alert.alert('Error', message);
@@ -43,46 +45,88 @@ export default function SignInScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Sign Up</Text>
       <TextInput
+        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
         keyboardType="email-address"
         autoCapitalize="none"
       />
       <TextInput
+        style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+      />
+      <TextInput
         style={styles.input}
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
       />
-      <Button
-        title={loading ? "Signing in..." : "Sign In"}
-        onPress={signIn}
+      <TouchableOpacity 
+        style={styles.button}
+        onPress={handleSignUp}
         disabled={loading}
-      />
-      <Button
-        title="Create an Account"
-        onPress={() => navigation.navigate('SignUp')}
-        disabled={loading}
-      />
+      >
+        <Text style={styles.buttonText}>
+          {loading ? 'Creating account...' : 'Sign Up'}
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.linkButton}
+        onPress={() => navigation.navigate('SignIn')}
+      >
+        <Text style={styles.linkText}>
+          Already have an account? Sign In
+        </Text>
+      </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    padding: 10,
-    marginBottom: 20,
+    padding: 15,
+    marginBottom: 15,
     borderRadius: 5,
-  }
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  linkButton: {
+    padding: 10,
+  },
+  linkText: {
+    color: '#007AFF',
+    textAlign: 'center',
+  },
 });
+
+export default SignUpScreen;

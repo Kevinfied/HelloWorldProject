@@ -5,43 +5,41 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebaseConfig';
 
-import SignUpScreen from './screens/SignUpScreen';
-import SignInScreen from './screens/SignInScreen';
-import HomeScreen from './screens/HomeScreen'; // You'll need to create this
+import SignIn from './screens/SignInScreen';
+import SignUp from './screens/SignUpScreen';
+import Home from './screens/HomeScreen';
 
 const Stack = createStackNavigator();
 
-export default function App() {
+const App = () => {
+  const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      if (initializing) setInitializing(false);
     });
 
     return unsubscribe;
-  }, []);
+  }, [initializing]);
 
-  if (loading) {
-    return null; // Or a loading spinner
-  }
+  if (initializing) return null;
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator>
         {user ? (
-          // Authenticated stack
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Home" component={Home} />
         ) : (
-          // Non-authenticated stack
           <>
-            <Stack.Screen name="SignIn" component={SignInScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
+            <Stack.Screen name="SignIn" component={SignIn} />
+            <Stack.Screen name="SignUp" component={SignUp} />
           </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
-}
+};
+
+export default App;
