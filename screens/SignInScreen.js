@@ -1,41 +1,88 @@
 // screens/SignInScreen.js
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
 export default function SignInScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const signIn = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Handle successful sign-in
+      // No need to navigate - App.js will handle this automatically
     } catch (error) {
-      setError(error.message);
+      let message = 'An error occurred during sign in';
+      switch (error.code) {
+        case 'auth/invalid-email':
+          message = 'Invalid email address';
+          break;
+        case 'auth/user-disabled':
+          message = 'This account has been disabled';
+          break;
+        case 'auth/user-not-found':
+          message = 'No account found with this email';
+          break;
+        case 'auth/wrong-password':
+          message = 'Invalid password';
+          break;
+      }
+      Alert.alert('Error', message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={{ padding: 20 }}>
+    <View style={styles.container}>
       <TextInput
         placeholder="Email"
         value={email}
-        onChangeText={(text) => setEmail(text)}
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        onChangeText={setEmail}
+        style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         placeholder="Password"
         value={password}
-        onChangeText={(text) => setPassword(text)}
+        onChangeText={setPassword}
         secureTextEntry
-        style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
+        style={styles.input}
       />
-      <Button title="Sign In" onPress={signIn} />
-      {error ? <Text style={{ color: 'red' }}>{error}</Text> : null}
-      <Button title="Go to Sign Up" onPress={() => navigation.navigate('SignUp')} />
+      <Button
+        title={loading ? "Signing in..." : "Sign In"}
+        onPress={signIn}
+        disabled={loading}
+      />
+      <Button
+        title="Create an Account"
+        onPress={() => navigation.navigate('SignUp')}
+        disabled={loading}
+      />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 10,
+    marginBottom: 20,
+    borderRadius: 5,
+  }
+});
