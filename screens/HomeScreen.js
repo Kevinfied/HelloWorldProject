@@ -13,11 +13,18 @@ const HomeScreen = () => {
     }
   };
 
+  const recordWorkout = async () => {
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome!</Text>
       <Text style={styles.email}>{auth.currentUser?.email}</Text>
-      
+      <Button
+  onPress={recordWorkout}
+  title="New Workout"
+  color="#841584"
+/>
       <TouchableOpacity style={styles.button} onPress={handleSignOut}>
         <Text style={styles.buttonText}>Sign Out</Text>
       </TouchableOpacity>

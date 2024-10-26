@@ -1,40 +1,37 @@
-// screens/SignUpScreen.js
+// screens/SignInScreen.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
-const SignUpScreen = ({ navigation }) => {
+const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword) {
+  const handleSignIn = async () => {
+    if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      let message = 'An error occurred during sign up';
+      let message = 'An error occurred during sign in';
       switch (error.code) {
-        case 'auth/email-already-in-use':
-          message = 'This email is already registered';
-          break;
         case 'auth/invalid-email':
           message = 'Invalid email address';
           break;
-        case 'auth/weak-password':
-          message = 'Password should be at least 6 characters';
+        case 'auth/user-disabled':
+          message = 'This account has been disabled';
+          break;
+        case 'auth/user-not-found':
+          message = 'No account found with this email';
+          break;
+        case 'auth/wrong-password':
+          message = 'Invalid password';
           break;
       }
       Alert.alert('Error', message);
@@ -45,7 +42,7 @@ const SignUpScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+      <Text style={styles.title}>Sign In</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -61,28 +58,21 @@ const SignUpScreen = ({ navigation }) => {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
       <TouchableOpacity 
-        style={styles.button}
-        onPress={handleSignUp}
+        style={styles.button} 
+        onPress={handleSignIn}
         disabled={loading}
       >
         <Text style={styles.buttonText}>
-          {loading ? 'Creating account...' : 'Sign Up'}
+          {loading ? 'Signing in...' : 'Sign In'}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.linkButton}
-        onPress={() => navigation.navigate('SignIn')}
+        onPress={() => navigation.navigate('SignUp')}
       >
         <Text style={styles.linkText}>
-          Already have an account? Sign In
+          Don't have an account? Sign Up
         </Text>
       </TouchableOpacity>
     </View>
@@ -129,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUpScreen;
+export default SignInScreen;
