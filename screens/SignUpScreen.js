@@ -24,6 +24,7 @@ const SignUpScreen = ({ navigation }) => {
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
+      navigation.replace('UserInfo'); // Navigate to UserInfo after sign-up
     } catch (error) {
       let message = 'An error occurred during sign up';
       switch (error.code) {
